@@ -2,12 +2,19 @@
  * Created by mikeybadr on 11/17/14.
  */
 
-var Hapi = require('hapi'),
-    Joi  = require('joi'),
-    port = process.env.PORT,
-    server = new Hapi.Server(port);
+var Hapi      = require('hapi'),
+    Joi       = require('joi'),
+    mongoose  = require('mongoose'),
+    port      = process.env.PORT,
+    db        = process.env.DB,
+    server    = new Hapi.Server(port);
 
 //make a route in hapi with server.route
+
+var mongoose = require('mongoose');
+mongoose.connect(db);
+
+var Dog = mongoose.model('Dog', { Name: String, Age: Number });
 
 server.route({
     config: {
@@ -31,13 +38,24 @@ server.route({
             query: {
                 limit: Joi.number().required().min(3)
             }
-
         }
     },
     method: 'GET',
     path: '/{name}',
     handler: function (request, reply) {
         reply('Hello, ' + (request.params.name) + '!' + request.query.limit);
+    }
+});
+
+server.route({
+    method: 'POST',
+    path: '/dogs',
+    handler: function(request, reply){
+        //reply(request.payload);
+        var puppy = new Dog(request.payload);
+        puppy.save(function(err){
+            reply(puppy);
+        });
     }
 });
 
